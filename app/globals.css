@@ -120,3 +120,44 @@
     @apply bg-background text-foreground;
   }
 }
+@keyframes floating1 {
+  0%,
+  100% {
+    transform: translate(-40px, -20px);
+  }
+  50% {
+    transform: translate(40px, 20px);
+  }
+}
+
+@keyframes floating2 {
+  0%,
+  100% {
+    transform: translate(40px, 25px);
+  }
+  50% {
+    transform: translate(-40px, -25px);
+  }
+}
+
+.animate-floating1 {
+  animation: floating1 6s ease-in-out infinite;
+}
+
+.animate-floating2 {
+  animation: floating2 7s ease-in-out infinite;
+}
+
+@keyframes softGlow {
+  0%,
+  100% {
+    box-shadow: inset 0 0 60px rgba(255, 255, 255, 0.05);
+  }
+  50% {
+    box-shadow: inset 0 0 120px rgba(255, 255, 255, 0.1);
+  }
+}
+
+.animate-softGlow {
+  animation: softGlow 5s ease-in-out infinite;
+}

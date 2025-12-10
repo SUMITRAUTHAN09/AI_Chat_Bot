@@ -1,4 +1,4 @@
-import FirstWindow from "@/components/custom/FirstWindow";
+import ChatWindow from "@/components/custom/ChatWindow";
 import NavBar from "@/components/custom/NavBar";
 
 export default function Page(){
@@ -12,7 +12,7 @@ export default function Page(){
 
       {/* RIGHT SIDE — CHAT WINDOW (3/4 width) */}
       <div className="w-4/4">
-        <FirstWindow/>
+        <ChatWindow/>
       </div>
 
     </div>

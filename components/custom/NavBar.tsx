@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Home, Library, Search, User } from "lucide-react";
+import Link from "next/link";
 import Logo from "./Logo";
 import { Typography } from "./Typography";
 
@@ -22,10 +23,10 @@ export default function NavBar() {
 
       {/* Menu */}
       <div className="space-y-3">
-        <NavItem icon={<Home />} label="New Chat" />
+        <Link href="/NewChat"><NavItem icon={<Home />} label="New Chat" /></Link>
         <NavItem icon={<Search />} label="Search" />
         <NavItem icon={<Library />} label="Library" />
-        <NavItem icon={<User />} label="Profile" />
+        <Link href="/ProfileSetting"><NavItem icon={<User />} label="Profile" /></Link>
       </div>
     </div>
   );

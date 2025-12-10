@@ -16,12 +16,12 @@ const typographyVariants = cva("", {
     },
 
     textColor: {
-      default: "text-foreground",
-      primary: "text-primary",
-      secondary: "text-secondary",
-      success: "text-green-600",
-      danger: "text-red-600",
-      muted: "text-muted-foreground",
+      default: "text-black",
+      primary: "text-gray-900",
+      secondary: "text-gray-700",
+      success: "text-gray-600",
+      danger: "text-gray-500",
+      muted: "text-gray-400",
     },
 
     weight: {
@@ -67,7 +67,7 @@ export function Typography({
       ? "h3"
       : variant === "h4"
       ? "h4"
-      : "p"; // paragraph is default
+      : "p";
 
   return (
     <Component

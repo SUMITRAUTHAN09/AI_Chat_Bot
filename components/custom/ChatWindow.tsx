@@ -40,7 +40,7 @@ export default function ChatWindow() {
   };
 
   return (
-    <div className="flex-1 h-screen bg-slate-950 p-6 flex flex-col">
+    <div className="flex-1 h-screen bg-slate-950 p-6 flex flex-col ">
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto space-y-4 mb-4">
         {messages.map((msg, i) => (
