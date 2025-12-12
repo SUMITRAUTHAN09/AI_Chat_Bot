@@ -1,17 +1,118 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Home, Library, Phone, Search, User } from "lucide-react";
+import { Home, Library, Phone, Search, User, Plus, MessageSquare, Trash2 } from "lucide-react";
 import Link from "next/link";
 import Logo from "./Logo";
 import { Typography } from "./Typography";
+import { useState, useEffect } from "react";
+
+interface Conversation {
+  conversationId: string;
+  messages: Array<{
+    role: string;
+    content: string;
+    timestamp: Date;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export default function NavBar() {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false); // Fix hydration
+
+  useEffect(() => {
+    setIsMounted(true); // Mark as mounted
+    const storedId = localStorage.getItem("conversationId");
+    if (storedId) {
+      setCurrentConversationId(storedId);
+    }
+    fetchConversations();
+  }, []);
+
+  const fetchConversations = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:3001/api/chat/conversations");
+      if (response.ok) {
+        const data = await response.json();
+        setConversations(data.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const startNewChat = () => {
+    localStorage.removeItem("conversationId");
+    setCurrentConversationId(null);
+    window.location.reload();
+  };
+
+  const loadConversation = (conversationId: string) => {
+    localStorage.setItem("conversationId", conversationId);
+    setCurrentConversationId(conversationId);
+    window.location.reload();
+  };
+
+  const deleteConversation = async (conversationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!confirm("Are you sure you want to delete this conversation?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/chat/conversations/${conversationId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setConversations((prev) => prev.filter((c) => c.conversationId !== conversationId));
+        
+        if (currentConversationId === conversationId) {
+          startNewChat();
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+    }
+  };
+
+  const getConversationPreview = (conversation: Conversation) => {
+    const lastMessage = conversation.messages[conversation.messages.length - 1];
+    return lastMessage?.content.slice(0, 40) + (lastMessage?.content.length > 40 ? "..." : "");
+  };
+
+  const formatDate = (date: Date) => {
+    if (!isMounted) return ""; // Return empty during SSR
+    
+    const now = new Date();
+    const messageDate = new Date(date);
+    const diffMs = now.getTime() - messageDate.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    
+    return messageDate.toLocaleDateString();
+  };
+
   return (
     <div className="w-64 h-screen bg-slate-900 border-r border-slate-800 p-6 flex flex-col space-y-6">
       <div className="w-full flex items-center justify-center pb-2">
-        <Logo/>
+        <Logo />
       </div>
+
       {/* Title */}
       <Typography
         variant="h3"
@@ -23,12 +124,78 @@ export default function NavBar() {
 
       {/* Menu */}
       <div className="space-y-3">
-        <Link href="/NewChat"><NavItem icon={<Home />} label="New Chat" /></Link>
+        <button
+          onClick={startNewChat}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer"
+        >
+          <Plus className="text-white" />
+          <Typography variant="paragraph" className="text-white">
+            New Chat
+          </Typography>
+        </button>
+
+        <Link href="/NewChat">
+          <NavItem icon={<Home />} label="Home" />
+        </Link>
         <NavItem icon={<Search />} label="Search" />
-        <Link href="/Call"><NavItem icon={<Phone/>} label="Call" /></Link>
-        
+        <Link href="/Call">
+          <NavItem icon={<Phone />} label="Call" />
+        </Link>
         <NavItem icon={<Library />} label="Library" />
-        <Link href="/ProfileSetting"><NavItem icon={<User />} label="Profile" /></Link>
+        <Link href="/ProfileSetting">
+          <NavItem icon={<User />} label="Profile" />
+        </Link>
+      </div>
+
+      {/* Recent Conversations */}
+      <div className="flex-1 overflow-y-auto space-y-2 pt-4 border-t border-slate-800">
+        <Typography variant="small" className="text-slate-400 px-2">
+          Recent Chats
+        </Typography>
+        
+        {isLoading ? (
+          <div className="flex items-center justify-center p-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+          </div>
+        ) : conversations.length === 0 ? (
+          <Typography variant="small" className="text-slate-500 text-center px-2 py-4">
+            No conversations yet
+          </Typography>
+        ) : (
+          conversations.slice(0, 5).map((conversation) => (
+            <div
+              key={conversation.conversationId}
+              onClick={() => loadConversation(conversation.conversationId)}
+              className={cn(
+                "group relative flex items-start gap-2 p-2 rounded-lg cursor-pointer transition-all",
+                currentConversationId === conversation.conversationId
+                  ? "bg-slate-800"
+                  : "hover:bg-slate-800/50"
+              )}
+            >
+              <MessageSquare className="w-4 h-4 mt-1 shrink-0 text-slate-400" />
+              
+              <div className="flex-1 min-w-0">
+                <Typography variant="small" className="text-slate-300 truncate">
+                  {getConversationPreview(conversation) || "New conversation"}
+                </Typography>
+                {isMounted && (
+                  <Typography variant="small" className="text-slate-500 text-xs">
+                    {formatDate(conversation.updatedAt)}
+                  </Typography>
+                )}
+              </div>
+
+              <button
+                onClick={(e) => deleteConversation(conversation.conversationId, e)}
+                className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 p-1 hover:bg-red-600/20 rounded transition-all"
+                title="Delete conversation"
+              >
+                <Trash2 className="w-3 h-3 text-red-500" />
+              </button>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

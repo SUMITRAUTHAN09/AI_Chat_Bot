@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Send } from "lucide-react";
-import { useState } from "react";
+import { Send, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { Typography } from "../custom/Typography";
 
 // Type definitions
@@ -13,53 +13,138 @@ type Sender = "bot" | "user";
 interface Message {
   sender: Sender;
   text: string;
+  timestamp: Date;
 }
 
 export default function ChatWindow() {
   const [messages, setMessages] = useState<Message[]>([
-    { sender: "bot", text: "Hello! How can I assist you today?" },
+    { sender: "bot", text: "Hello! How can I assist you today?", timestamp: new Date() },
   ]);
-
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false); // Fix hydration
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-    const newMsg: Message = { sender: "user", text: input };
-    setMessages([...messages, newMsg]);
+  useEffect(() => {
+    setIsMounted(true); // Mark as mounted on client
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      sender: "user",
+      text: input.trim(),
+      timestamp: new Date()
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setIsLoading(true);
 
-    // Fake bot reply
-    setTimeout(() => {
+    try {
+      const response = await fetch("http://localhost:3001/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: userMessage.text,
+          conversationId: localStorage.getItem("conversationId") || null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get response");
+      }
+
+      const data = await response.json();
+
+      if (data.conversationId) {
+        localStorage.setItem("conversationId", data.conversationId);
+      }
+
       const botReply: Message = {
         sender: "bot",
-        text: "Thanks for your message!",
+        text: data.response,
+        timestamp: new Date()
       };
+
       setMessages((prev) => [...prev, botReply]);
-    }, 700);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      const errorMessage: Message = {
+        sender: "bot",
+        text: "Sorry, I encountered an error. Please try again.",
+        timestamp: new Date()
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+      inputRef.current?.focus();
+    }
   };
 
   return (
-    <div className="flex-1 h-screen bg-slate-950 p-6 flex flex-col ">
+    <div className="flex-1 h-screen bg-slate-950 p-6 flex flex-col">
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto space-y-4 mb-4">
         {messages.map((msg, i) => (
-          <ChatBubble key={i} sender={msg.sender} text={msg.text} />
+          <ChatBubble 
+            key={i} 
+            sender={msg.sender} 
+            text={msg.text} 
+            timestamp={msg.timestamp}
+            isMounted={isMounted} // Pass mounted state
+          />
         ))}
+        {isLoading && (
+          <div className="max-w-lg mr-auto bg-slate-800 p-4 rounded-xl flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+            <Typography variant="paragraph" className="text-slate-300">
+              Thinking...
+            </Typography>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}
       <div className="flex items-center gap-3">
         <Input
+          ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyPress={handleKeyPress}
           placeholder="Type your message..."
-          className="bg-slate-800 border-slate-700 text-white"
+          disabled={isLoading}
+          className="bg-slate-800 border-slate-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
         />
 
         <Button
           onClick={sendMessage}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          disabled={isLoading || !input.trim()}
+          className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-700 disabled:cursor-not-allowed"
         >
           <Send className="w-4 h-4 mr-1" /> Send
         </Button>
@@ -71,14 +156,22 @@ export default function ChatWindow() {
 function ChatBubble({
   sender,
   text,
+  timestamp,
+  isMounted = true, // Add isMounted prop
 }: {
   sender: "user" | "bot";
   text: string;
+  timestamp: Date;
+  isMounted?: boolean;
 }) {
   const isUser = sender === "user";
 
+  // Format time only on client side to avoid hydration mismatch
+  const formattedTime = isMounted 
+    ? timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : "--:--";
+
   return (
-    
     <div
       className={cn(
         "max-w-lg p-4 rounded-xl",
@@ -87,6 +180,9 @@ function ChatBubble({
     >
       <Typography variant="paragraph" className="text-white">
         {text}
+      </Typography>
+      <Typography variant="small" className="text-slate-300 opacity-60 mt-1">
+        {formattedTime}
       </Typography>
     </div>
   );
