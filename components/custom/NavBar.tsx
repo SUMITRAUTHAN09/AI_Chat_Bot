@@ -1,11 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Home, Library, Phone, Search, User, Plus, MessageSquare, Trash2 } from "lucide-react";
+import { Home, Library, MessageSquare, Phone, Plus, Search, Trash2, User } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import Logo from "./Logo";
 import { Typography } from "./Typography";
-import { useState, useEffect } from "react";
 
 interface Conversation {
   conversationId: string;
@@ -134,7 +134,7 @@ export default function NavBar() {
           </Typography>
         </button>
 
-        <Link href="/NewChat">
+        <Link href="/ChatWindow">
           <NavItem icon={<Home />} label="Home" />
         </Link>
         <NavItem icon={<Search />} label="Search" />
