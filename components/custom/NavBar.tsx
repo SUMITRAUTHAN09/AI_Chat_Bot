@@ -29,6 +29,8 @@ interface Conversation {
   updatedAt: Date;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export default function NavBar() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<
@@ -47,10 +49,15 @@ export default function NavBar() {
   }, []);
 
   const fetchConversations = async () => {
+    if (!API_BASE_URL) {
+      console.error("NEXT_PUBLIC_API_BASE_URL is not set");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch(
-        "http://localhost:3001/api/chat/conversations"
+        `${API_BASE_URL}/api/chat/conversations`
       );
       if (response.ok) {
         const data = await response.json();
@@ -85,9 +92,14 @@ export default function NavBar() {
       return;
     }
 
+    if (!API_BASE_URL) {
+      console.error("NEXT_PUBLIC_API_BASE_URL is not set");
+      return;
+    }
+
     try {
       const response = await fetch(
-        `http://localhost:3001/api/chat/conversations/${conversationId}`,
+        `${API_BASE_URL}/api/chat/conversations/${conversationId}`,
         {
           method: "DELETE",
         }
