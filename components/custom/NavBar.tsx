@@ -29,7 +29,7 @@ interface Conversation {
   updatedAt: Date;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function NavBar() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -50,7 +50,7 @@ export default function NavBar() {
 
   const fetchConversations = async () => {
     if (!API_BASE_URL) {
-      console.error("NEXT_PUBLIC_API_BASE_URL is not set");
+      console.error("NEXT_PUBLIC_API_URL is not set");
       return;
     }
 
@@ -93,7 +93,7 @@ export default function NavBar() {
     }
 
     if (!API_BASE_URL) {
-      console.error("NEXT_PUBLIC_API_BASE_URL is not set");
+      console.error("NEXT_PUBLIC_API_URL is not set");
       return;
     }
 
