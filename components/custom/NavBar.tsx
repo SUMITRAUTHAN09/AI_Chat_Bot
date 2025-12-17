@@ -182,7 +182,7 @@ export default function NavBar() {
       {/* Sidebar */}
        <div
         className={cn(
-          "fixed inset-y-0 left-0 z-0",
+          "fixed inset-y-0 left-0 z-40",
           "lg:relative lg:inset-auto",
           "w-65 h-screen bg-slate-900 border-r border-slate-800 p-6 flex flex-col space-y-6",
           "transform transition-transform duration-300 ease-in-out",
