@@ -148,14 +148,14 @@ export default function NavBar() {
       </button>*/}
       <button
   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-  className="lg:hidden fixed top-5 left-1 z-50 p-2 bg-slate-900 border border-slate-800 rounded-lg text-white cursor-pointer w-5 h-5"
+  className="lg:hidden fixed top-5 left-1 z-50 p-1 bg-slate-900 border border-slate-800 rounded-lg text-white cursor-pointer w-8 h-8"
 >
   <div className="relative w-6 h-6 ">
     {/* Menu Icon */}
     <Menu
       className={`absolute w-6 h-6 transition-all duration-300 ease-in-out z-30
         ${isMobileMenuOpen
-          ? 'opacity-0 scale-75 '
+          ? 'opacity-0 scale-0 '
           : 'opacity-100 scale-100 rotate-0'}
       `}
     />
@@ -182,7 +182,7 @@ export default function NavBar() {
       {/* Sidebar */}
        <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40",
+          "fixed inset-y-0 left-0 z-0",
           "lg:relative lg:inset-auto",
           "w-65 h-screen bg-slate-900 border-r border-slate-800 p-6 flex flex-col space-y-6",
           "transform transition-transform duration-300 ease-in-out",
