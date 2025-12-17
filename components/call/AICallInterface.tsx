@@ -1,19 +1,18 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { useAICall } from '@/hooks/useAICall';
 import { Button } from '@/components/ui/button';
-import { 
-  Mic, 
-  MicOff, 
-  PhoneOff, 
-  Volume2, 
-  VolumeX,
+import { useAICall } from '@/hooks/useAICall';
+import {
+  Bot,
   Loader2,
   MessageSquare,
-  Bot,
-  User
+  Mic,
+  PhoneOff,
+  User,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 interface AICallInterfaceProps {
   aiModel: string;
@@ -31,16 +30,16 @@ export default function AICallInterface({
   const [callDuration, setCallDuration] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const {
-    isRecording,
-    isProcessing,
+    isListening,
+    isSpeaking,
     messages,
     error,
     startCall,
     endCall,
     sendMessage,
-    toggleRecording,
   } = useAICall({
     callId: `ai-call-${Date.now()}`,
     userId: 'user-123',
@@ -52,6 +51,7 @@ export default function AICallInterface({
     },
   });
 
+  // Start call on mount
   useEffect(() => {
     startCall();
     const interval = setInterval(() => {
@@ -60,6 +60,7 @@ export default function AICallInterface({
     return () => clearInterval(interval);
   }, [startCall]);
 
+  // Initialize video stream for video calls
   useEffect(() => {
     if (callType === 'video' && videoRef.current) {
       initVideoStream();
@@ -70,6 +71,11 @@ export default function AICallInterface({
       }
     };
   }, [callType]);
+
+  // Auto-scroll chat to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const initVideoStream = async () => {
     try {
@@ -103,7 +109,7 @@ export default function AICallInterface({
       <div className="bg-slate-900/50 backdrop-blur-sm border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-white text-xl font-semibold">AI Assistant</h2>
+            <h2 className="text-white text-xl font-semibold">AI Assistant Call</h2>
             <p className="text-slate-400 text-sm">
               Model: {aiModel} • {formatDuration(callDuration)}
             </p>
@@ -156,30 +162,37 @@ export default function AICallInterface({
                       <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-white/10 backdrop-blur-xl border-4 border-white/30 mb-4">
                         <Bot className="w-16 h-16 text-white" />
                       </div>
-                      <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full inline-flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`} />
-                        <span className="text-white text-sm">
-                          {isRecording ? 'Listening' : isProcessing ? 'Speaking' : 'Ready'}
+                      <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-full inline-flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          isListening ? 'bg-red-500 animate-pulse' : 
+                          isSpeaking ? 'bg-blue-500 animate-pulse' : 
+                          'bg-green-500'
+                        }`} />
+                        <span className="text-white text-base font-medium">
+                          {isListening ? 'Listening...' : 
+                           isSpeaking ? 'AI Speaking...' : 
+                           'Ready to listen'}
                         </span>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {isRecording && (
+                {/* Status Overlays */}
+                {isListening && (
                   <div className="absolute bottom-4 left-4 right-4">
-                    <div className="bg-red-500/90 backdrop-blur-sm text-white px-4 py-2 rounded-full flex items-center justify-center gap-2">
-                      <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
-                      <span className="font-medium">Listening...</span>
+                    <div className="bg-red-500/90 backdrop-blur-sm text-white px-4 py-3 rounded-full flex items-center justify-center gap-2">
+                      <Mic className="w-4 h-4 animate-pulse" />
+                      <span className="font-medium">Listening to you...</span>
                     </div>
                   </div>
                 )}
 
-                {isProcessing && (
+                {isSpeaking && (
                   <div className="absolute bottom-4 left-4 right-4">
-                    <div className="bg-blue-500/90 backdrop-blur-sm text-white px-4 py-2 rounded-full flex items-center justify-center gap-2">
+                    <div className="bg-blue-500/90 backdrop-blur-sm text-white px-4 py-3 rounded-full flex items-center justify-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="font-medium">AI is thinking...</span>
+                      <span className="font-medium">AI is responding...</span>
                     </div>
                   </div>
                 )}
@@ -199,37 +212,40 @@ export default function AICallInterface({
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center text-slate-400">
                         <Bot className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                        <p className="text-sm">Start speaking to begin</p>
+                        <p className="text-sm">Conversation will appear here</p>
                       </div>
                     </div>
                   ) : (
-                    messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex gap-3 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        {message.type === 'ai' && (
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                            <Bot className="w-5 h-5 text-white" />
+                    <>
+                      {messages.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`flex gap-3 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                          {message.type === 'ai' && (
+                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                              <Bot className="w-5 h-5 text-white" />
+                            </div>
+                          )}
+                          <div className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-lg ${
+                            message.type === 'user' 
+                              ? 'bg-blue-600 text-white' 
+                              : 'bg-slate-800 text-white border border-slate-700'
+                          }`}>
+                            <p className="text-sm leading-relaxed break-words">{message.text}</p>
+                            <p className={`text-xs mt-1 ${message.type === 'user' ? 'text-blue-100' : 'text-slate-400'}`}>
+                              {message.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
                           </div>
-                        )}
-                        <div className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-lg ${
-                          message.type === 'user' 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-slate-800 text-white border border-slate-700'
-                        }`}>
-                          <p className="text-sm leading-relaxed break-words">{message.text}</p>
-                          <p className={`text-xs mt-1 ${message.type === 'user' ? 'text-blue-100' : 'text-slate-400'}`}>
-                            {message.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                          {message.type === 'user' && (
+                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                              <User className="w-5 h-5 text-white" />
+                            </div>
+                          )}
                         </div>
-                        {message.type === 'user' && (
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                            <User className="w-5 h-5 text-white" />
-                          </div>
-                        )}
-                      </div>
-                    ))
+                      ))}
+                      <div ref={chatEndRef} />
+                    </>
                   )}
                 </div>
               </div>
@@ -257,30 +273,20 @@ export default function AICallInterface({
 
             <Button
               size="lg"
-              onClick={toggleRecording}
-              disabled={isProcessing}
-              className={`rounded-full w-20 h-20 transition-all ${
-                isRecording
-                  ? 'bg-red-500 hover:bg-red-600 scale-110'
-                  : 'bg-blue-600 hover:bg-blue-700'
-              } text-white shadow-lg disabled:opacity-50`}
+              onClick={handleEndCall}
+              className="rounded-full w-20 h-20 bg-red-500 hover:bg-red-600 text-white shadow-lg"
             >
-              {isRecording ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
+              <PhoneOff className="w-8 h-8" />
             </Button>
 
-            <Button
-              size="lg"
-              variant="ghost"
-              onClick={handleEndCall}
-              className="rounded-full w-16 h-16 bg-red-500 hover:bg-red-600 text-white"
-            >
-              <PhoneOff className="w-6 h-6" />
-            </Button>
+            <div className="w-16" /> {/* Spacer for symmetry */}
           </div>
 
           <div className="mt-4 text-center">
             <p className="text-slate-400 text-sm">
-              {isRecording ? 'Click microphone to stop recording' : 'Click microphone to start speaking'}
+              {isListening ? '🎤 Listening to your voice...' : 
+               isSpeaking ? '🤖 AI is speaking...' : 
+               '💬 Speak naturally - AI will respond automatically'}
             </p>
           </div>
         </div>

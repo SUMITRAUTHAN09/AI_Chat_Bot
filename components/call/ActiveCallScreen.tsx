@@ -13,6 +13,8 @@ interface ActiveCallScreenProps {
   isSpeakerOn: boolean;
   isFullscreen: boolean;
   callDuration: number;
+  isListening: boolean;
+  isSpeaking: boolean;
   formatDuration: (seconds: number) => string;
   setIsMuted: (value: boolean) => void;
   toggleVideo: () => void;
@@ -29,6 +31,8 @@ export default function ActiveCallScreen({
   isSpeakerOn,
   isFullscreen,
   callDuration,
+  isListening,
+  isSpeaking,
   formatDuration,
   setIsMuted,
   toggleVideo,
@@ -45,6 +49,8 @@ export default function ActiveCallScreen({
             callType={callType}
             callStatus={callStatus}
             isVideoEnabled={isVideoEnabled}
+            isListening={isListening}
+            isSpeaking={isSpeaking}
           />
 
           <CallStatusOverlay
