@@ -106,7 +106,7 @@ export default function ChatWindow() {
 
   return (
     <div className="flex-1 h-screen bg-slate-950 p-6 flex flex-col">
-      <div className="flex-1 overflow-y-auto space-y-4 mb-10 mt-10">
+      <div className="flex-1 overflow-y-auto space-y-4 mb-10 mt-18">
         {messages.map((msg, i) => (
           <ChatBubble
             key={i}
