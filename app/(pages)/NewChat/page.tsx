@@ -9,7 +9,7 @@ export default function Page() {
     <>
       <div className="w-full h-screen flex bg-background overflow-hidden">
         {/* LEFT SIDE — NAVIGATION (1/4 width) */}
-        <div className="border-r border-slate-800">
+        <div className="border-r mt-20 border-slate-800">
           <NavBar />
         </div>
 
