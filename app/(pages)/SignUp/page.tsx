@@ -62,6 +62,7 @@ export default function SignupPage() {
         const response = await authService.signup(values);
 
         if (!response.success) {
+          // Handle validation errors from backend
           if (response.errors) {
             const formikErrors: any = {};
             response.errors.forEach((error) => {
@@ -70,6 +71,7 @@ export default function SignupPage() {
             setErrors(formikErrors);
           }
 
+          // Show error toast
           setToastMessage(response.message || "Signup failed");
           setShowToast(true);
           setIsLoading(false);
@@ -78,9 +80,11 @@ export default function SignupPage() {
           return;
         }
 
+        // Success
         setToastMessage("Signup successful!");
         setShowToast(true);
 
+        // Store user data if needed (optional)
         if (response.data) {
           localStorage.setItem("user", JSON.stringify(response.data.user));
         }
@@ -113,58 +117,56 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-gradient-to-b from-neutral-950 to-neutral-900 text-gray-100 p-3 sm:p-4 md:p-6 py-20 sm:py-24 md:py-6">
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-gradient-to-b from-neutral-950 to-neutral-900 text-gray-100 p-4">
 
-      {/* Logo - Responsive with proper z-index */}
-      <div className="fixed top-4 left-4 sm:top-6 sm:left-6 md:top-10 md:left-10 opacity-80 z-10 pointer-events-none">
-        <div className="scale-75 sm:scale-90 md:scale-100">
-          <Logo />
-        </div>
+      {/* Logo */}
+      <div className="absolute top-10 left-10 opacity-80">
+        <Logo />
       </div>
 
-      {/* Technical Background Grid - Hide on small screens */}
-      <div className="hidden sm:block absolute inset-0 opacity-[0.05] bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+      {/* Technical Background Grid */}
+      <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
-      {/* Technical Rings - Responsive sizes */}
-      <div className="absolute w-[350px] h-[350px] sm:w-[500px] sm:h-[500px] md:w-[600px] md:h-[600px] rounded-full border border-neutral-700/20 animate-floating1 pointer-events-none" />
-      <div className="absolute w-[550px] h-[550px] sm:w-[750px] sm:h-[750px] md:w-[900px] md:h-[900px] rounded-full border border-neutral-700/10 animate-floating2 pointer-events-none" />
+      {/* Technical Rings */}
+      <div className="absolute w-[600px] h-[600px] rounded-full border border-neutral-700/20 animate-floating1" />
+      <div className="absolute w-[900px] h-[900px] rounded-full border border-neutral-700/10 animate-floating2" />
 
-      {/* Soft Glow - Responsive */}
-      <div className="absolute w-[250px] h-[250px] sm:w-[350px] sm:h-[350px] md:w-[450px] md:h-[450px] bg-neutral-700/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Soft Glow */}
+      <div className="absolute w-[450px] h-[450px] bg-neutral-700/10 rounded-full blur-3xl" />
 
-      {/* Signup Card - Higher z-index than logo and footer */}
-      <Card className="relative z-40 w-full max-w-[90%] sm:max-w-md bg-neutral-900/70 backdrop-blur-xl border border-neutral-700 shadow-[0_0_40px_rgba(0,0,0,0.6)] rounded-xl sm:rounded-2xl my-4">
+      {/* Signup Card */}
+      <Card className="relative w-full max-w-md bg-neutral-900/70 backdrop-blur-xl border border-neutral-700 shadow-[0_0_40px_rgba(0,0,0,0.6)] rounded-2xl">
 
-        <CardHeader className="text-center space-y-3 sm:space-y-4 pb-4 sm:pb-5 pt-6 sm:pt-8 px-4 sm:px-6">
+        <CardHeader className="text-center space-y-4 pb-5 pt-8">
           <div>
-            <CardTitle className="text-2xl sm:text-3xl font-bold">
+            <CardTitle className="text-3xl font-bold">
               <Typography variant="h2" align="center" className="text-gray-100">
                 Create Account
               </Typography>
             </CardTitle>
-            <CardDescription className="mt-1.5 sm:mt-2">
-              <Typography variant="muted" align="center" className="text-gray-400 text-sm sm:text-base">
+            <CardDescription className="mt-2">
+              <Typography variant="muted" align="center" className="text-gray-400">
                 Start your AI journey
               </Typography>
             </CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4 sm:space-y-6 pb-6 sm:pb-10 px-4 sm:px-6">
+        <CardContent className="space-y-6 pb-10">
 
           {/* Form */}
-          <div className="space-y-4 sm:space-y-5">
+          <form onSubmit={formik.handleSubmit} className="space-y-5">
 
             {/* Full Name */}
             <div className="space-y-1">
               <Label htmlFor="name">
-                <Typography variant="label" className="text-gray-300 text-sm sm:text-base">
+                <Typography variant="label" className="text-gray-300">
                   Full Name
                 </Typography>
               </Label>
 
               <div className="relative group">
-                <User className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-500 transition-colors group-focus-within:text-gray-300" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 transition-colors group-focus-within:text-gray-300" />
                 <Input
                   id="name"
                   name="name"
@@ -174,12 +176,12 @@ export default function SignupPage() {
                   onChange={formik.handleChange}
                   placeholder="Your Name"
                   disabled={isLoading}
-                  className="h-10 sm:h-12 pl-9 sm:pl-11 text-sm sm:text-base bg-neutral-800/60 border-neutral-700 text-gray-100 placeholder-gray-500 focus:border-gray-400 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-12 pl-11 bg-neutral-800/60 border-neutral-700 text-gray-100 placeholder-gray-500 focus:border-gray-400 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
               {formik.touched.name && formik.errors.name && (
-                <Typography variant="small" className="text-red-400 mt-1 text-xs sm:text-sm">
+                <Typography variant="small" className="text-red-400 mt-1">
                   {formik.errors.name}
                 </Typography>
               )}
@@ -188,13 +190,13 @@ export default function SignupPage() {
             {/* Email */}
             <div className="space-y-1">
               <Label htmlFor="email">
-                <Typography variant="label" className="text-gray-300 text-sm sm:text-base">
+                <Typography variant="label" className="text-gray-300">
                   Email Address
                 </Typography>
               </Label>
 
               <div className="relative group">
-                <Mail className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-500 transition-colors group-focus-within:text-gray-300" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 transition-colors group-focus-within:text-gray-300" />
                 <Input
                   id="email"
                   name="email"
@@ -204,12 +206,12 @@ export default function SignupPage() {
                   onChange={formik.handleChange}
                   placeholder="Email"
                   disabled={isLoading}
-                  className="h-10 sm:h-12 pl-9 sm:pl-11 text-sm sm:text-base bg-neutral-800/60 border-neutral-700 text-gray-100 placeholder-gray-500 focus:border-gray-400 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-12 pl-11 bg-neutral-800/60 border-neutral-700 text-gray-100 placeholder-gray-500 focus:border-gray-400 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
               {formik.touched.email && formik.errors.email && (
-                <Typography variant="small" className="text-red-400 mt-1 text-xs sm:text-sm">
+                <Typography variant="small" className="text-red-400 mt-1">
                   {formik.errors.email}
                 </Typography>
               )}
@@ -218,13 +220,13 @@ export default function SignupPage() {
             {/* Password */}
             <div className="space-y-1">
               <Label htmlFor="password">
-                <Typography variant="label" className="text-gray-300 text-sm sm:text-base">
+                <Typography variant="label" className="text-gray-300">
                   Password
                 </Typography>
               </Label>
 
               <div className="relative group">
-                <Lock className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-500 transition-colors group-focus-within:text-gray-300" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 transition-colors group-focus-within:text-gray-300" />
                 <Input
                   id="password"
                   name="password"
@@ -234,21 +236,21 @@ export default function SignupPage() {
                   onChange={formik.handleChange}
                   placeholder="Create password"
                   disabled={isLoading}
-                  className="h-10 sm:h-12 pl-9 sm:pl-11 pr-9 sm:pr-11 text-sm sm:text-base bg-neutral-800/60 border-neutral-700 text-gray-100 placeholder-gray-500 focus:border-gray-400 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-12 pl-11 pr-11 bg-neutral-800/60 border-neutral-700 text-gray-100 placeholder-gray-500 focus:border-gray-400 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
-                  className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors cursor-pointer disabled:opacity-50"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
 
               {formik.touched.password && formik.errors.password && (
-                <Typography variant="small" className="text-red-400 mt-1 text-xs sm:text-sm">
+                <Typography variant="small" className="text-red-400 mt-1">
                   {formik.errors.password}
                 </Typography>
               )}
@@ -257,13 +259,13 @@ export default function SignupPage() {
             {/* Confirm Password */}
             <div className="space-y-1">
               <Label htmlFor="confirmPassword">
-                <Typography variant="label" className="text-gray-300 text-sm sm:text-base">
+                <Typography variant="label" className="text-gray-300">
                   Confirm Password
                 </Typography>
               </Label>
 
               <div className="relative group">
-                <Lock className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-500 transition-colors group-focus-within:text-gray-300" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 transition-colors group-focus-within:text-gray-300" />
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -273,19 +275,19 @@ export default function SignupPage() {
                   onChange={formik.handleChange}
                   placeholder="Re-enter password"
                   disabled={isLoading}
-                  className="h-10 sm:h-12 pl-9 sm:pl-11 pr-9 sm:pr-11 text-sm sm:text-base bg-neutral-800/60 border-neutral-700 text-gray-100 placeholder-gray-500 focus:border-gray-400 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-12 pl-11 pr-11 bg-neutral-800/60 border-neutral-700 text-gray-100 placeholder-gray-500 focus:border-gray-400 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
               {formik.touched.confirmPassword && formik.errors.confirmPassword && (
-                <Typography variant="small" className="text-red-400 mt-1 text-xs sm:text-sm">
+                <Typography variant="small" className="text-red-400 mt-1">
                   {formik.errors.confirmPassword}
                 </Typography>
               )}
             </div>
 
             {/* Terms */}
-            <div className="flex items-start sm:items-center space-x-2 pt-1">
+            <div className="flex items-center space-x-2 pt-1">
               <Checkbox
                 id="agreeToTerms"
                 name="agreeToTerms"
@@ -294,9 +296,9 @@ export default function SignupPage() {
                   formik.setFieldValue("agreeToTerms", value)
                 }
                 disabled={isLoading}
-                className="border-gray-700 data-[state=checked]:bg-gray-400 data-[state=checked]:border-gray-400 disabled:opacity-50 mt-0.5 sm:mt-0"
+                className="border-gray-700 data-[state=checked]:bg-gray-400 data-[state=checked]:border-gray-400 disabled:opacity-50"
               />
-              <Label htmlFor="agreeToTerms" className="text-gray-400 text-xs sm:text-sm cursor-pointer leading-tight">
+              <Label htmlFor="agreeToTerms" className="text-gray-400 text-sm cursor-pointer">
                 I agree to the Terms & Conditions
               </Label>
             </div>
@@ -304,10 +306,6 @@ export default function SignupPage() {
             {/* Submit Button */}
             <Button
               type="submit"
-              onClick={(e) => {
-                e.preventDefault();
-                formik.handleSubmit();
-              }}
               disabled={
                 isLoading ||
                 !formik.values.name ||
@@ -316,25 +314,25 @@ export default function SignupPage() {
                 !formik.values.confirmPassword ||
                 !formik.values.agreeToTerms
               }
-              className="w-full h-10 sm:h-12 bg-gray-200 hover:bg-gray-300 text-black font-semibold transition-all rounded-lg sm:rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm sm:text-base"
+              className="w-full h-12 bg-gray-200 hover:bg-gray-300 text-black font-semibold transition-all rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {isLoading ? (
                 <>
-                  <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-black border-t-transparent rounded-full animate-spin mr-2" />
-                  <span className="text-sm sm:text-base">Creating Account...</span>
+                  <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin mr-2" />
+                  Creating Account...
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  <span className="text-sm sm:text-base">Create Account</span>
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Create Account
                 </>
               )}
             </Button>
-          </div>
+          </form>
 
           {/* Already Have an Account */}
           <div className="text-center">
-            <Typography variant="small" className="text-gray-400 text-xs sm:text-sm">
+            <Typography variant="small" className="text-gray-400">
               Already have an account?{" "}
               <button
                 onClick={() => router.push(NAVIGATION_ROUTES.HOME)}
@@ -347,10 +345,10 @@ export default function SignupPage() {
           </div>
 
           {/* Divider */}
-          <div className="relative py-2">
+          <div className="relative">
             <Separator className="bg-neutral-700" />
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 sm:px-3">
-              <Typography variant="small" className="text-gray-500 text-xs sm:text-sm whitespace-nowrap">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-3">
+              <Typography variant="small" className="text-gray-500">
                 Or continue with
               </Typography>
             </div>
@@ -366,14 +364,11 @@ export default function SignupPage() {
         </CardContent>
       </Card>
        
-      {/* Footer with proper z-index below card */}
-      <div className="fixed bottom-0 left-0 right-0 z-30">
-        <FooterLink />
-      </div>
+      <FooterLink/>
      
-      {/* Toast - Responsive */}
+      {/* Toast */}
       <div
-        className={`fixed bottom-4 sm:bottom-10 left-1/2 -translate-x-1/2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl text-white font-medium shadow-lg transition-all duration-500 text-sm sm:text-base max-w-[90%] sm:max-w-none text-center z-50 ${
+        className={`fixed bottom-10 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl text-white font-medium shadow-lg transition-all duration-500 ${
           toastMessage.toLowerCase().includes('success') || toastMessage.toLowerCase().includes('successful')
             ? 'bg-green-600' 
             : 'bg-red-600'
